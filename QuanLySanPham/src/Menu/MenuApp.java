@@ -40,8 +40,11 @@ public class MenuApp {
         int i = 1;
         for (Map.Entry<Product, String> entry : products.entrySet()) {
             Product p = entry.getKey();
-            float price = showDiscount ? getFinalPrice(p) : p.getPrice();
-            System.out.println(i++ + ". " + p.getName() + " | Price: " + price + " -> Category: " + entry.getValue());
+            if (showDiscount) {
+                System.out.println(i++ + ". " + p.toStringWithDiscount() + " -> Category: " + entry.getValue());
+            } else {
+                System.out.println(i++ + ". " + p.toString() + " -> Category: " + entry.getValue());
+            }
         }
     }
 
@@ -80,14 +83,7 @@ public class MenuApp {
         }
     }
 
-
-    public static void viewMenu(Scanner sc) {
-        if (products.isEmpty()) {
-            System.out.println("Chưa có sản phẩm nào!");
-            return;
-        }
-
-        boolean showDiscount = false;
+    public static boolean choosePriceType(Scanner sc) {
         while (true) {
             System.out.println("\n--- CHỌN KIỂU GIÁ ---");
             System.out.println("1. Xem giá gốc");
@@ -95,14 +91,19 @@ public class MenuApp {
             System.out.print("Chọn: ");
             int opt = Integer.parseInt(sc.nextLine());
             if (opt == 1) {
-                showDiscount = false;
-                break;
+                return false;
             } else if (opt == 2) {
-                showDiscount = true;
-                break;
+                return true; 
             } else {
                 System.out.println("Lựa chọn không hợp lệ!");
             }
+        }
+    }
+
+    public static void viewMenu(Scanner sc, boolean showDiscount) {
+        if (products.isEmpty()) {
+            System.out.println("Chưa có sản phẩm nào!");
+            return;
         }
 
         while (true) {
@@ -126,7 +127,6 @@ public class MenuApp {
             pause(sc);
         }
     }
-
 
     public static void addCategory(ArrayList<Category> categories, Scanner sc) {
         System.out.print("Tên Category mới: ");
@@ -300,6 +300,8 @@ public class MenuApp {
         }
     }
 
+    private static Map<Product, Integer> cart = new HashMap<>();
+
     public static void manageCart(Scanner sc) {
         while (true) {
             System.out.println("\n--- GIỎ HÀNG ---");
@@ -317,10 +319,87 @@ public class MenuApp {
                 case 0 -> { return; }
                 default -> System.out.println("Lựa chọn không hợp lệ!");
             }
+            pause(sc);
         }
     }
 
-    
+    private static void addToCart(Scanner sc) {
+        if (products.isEmpty()) {
+            System.out.println("Chưa có sản phẩm nào!");
+            return;
+        }
+
+        boolean showDiscount = true;
+        viewProductsNormal(showDiscount);
+
+        System.out.print("Chọn sản phẩm (số): ");
+        int idx = Integer.parseInt(sc.nextLine()) - 1;
+
+        List<Product> productList = new ArrayList<>(products.keySet());
+        if (idx < 0 || idx >= productList.size()) {
+            System.out.println("Sản phẩm không hợp lệ!");
+            return;
+        }
+
+        Product selected = productList.get(idx);
+        System.out.print("Nhập số lượng: ");
+        int qty = Integer.parseInt(sc.nextLine());
+
+        if (qty <= 0) {
+            System.out.println("Số lượng phải lớn hơn 0!");
+            return;
+        }
+        if (qty > selected.getStock()) {
+            System.out.println("Không đủ số lượng trong kho!");
+            return;
+        }
+
+        cart.put(selected, cart.getOrDefault(selected, 0) + qty);
+        System.out.println("Đã thêm vào giỏ!");
+    }
+
+
+    private static void viewCart() {
+        if (cart.isEmpty()) {
+            System.out.println("Giỏ hàng trống!");
+            return;
+        }
+        float total = 0;
+        int i = 1;
+        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+            Product p = entry.getKey();
+            int qty = entry.getValue();
+            float price = getFinalPrice(p);
+            float subtotal = price * qty;
+            total += subtotal;
+            System.out.println(i++ + ". " + p.getName() + " | Giá: " + price 
+                               + " | SL: " + qty + " | Thành tiền: " + subtotal);
+        }
+        System.out.println("TỔNG: " + total);
+    }
+
+    private static void checkout(Scanner sc) {
+        if (cart.isEmpty()) {
+            System.out.println("Giỏ hàng trống!");
+            return;
+        }
+        viewCart();
+        System.out.print("Xác nhận thanh toán? (y/n): ");
+        String confirm = sc.nextLine();
+        if (confirm.equalsIgnoreCase("y")) {
+            for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+                Product p = entry.getKey();
+                int qty = entry.getValue();
+                p.setAmount(p.getAmount() - qty);
+                p.setSold(p.getSold() + qty);
+            }
+            cart.clear();
+            System.out.println("Thanh toán thành công!");
+        } else {
+            System.out.println("Đã hủy thanh toán.");
+        }
+    }
+
     private static void pause(Scanner sc) {
         System.out.println("\nNhấn Enter để tiếp tục...");
         sc.nextLine();
@@ -340,12 +419,16 @@ public class MenuApp {
             System.out.println("6. Xóa Product");
             System.out.println("7. Sửa Product");
             System.out.println("8. Quản lý giảm giá");
+            System.out.println("9. Giỏ hàng / Đặt hàng");
             System.out.println("0. Thoát");
             System.out.print("Chọn: ");
             int choice = Integer.parseInt(sc.nextLine());
 
             switch (choice) {
-                case 1 -> viewMenu(sc);
+	            case 1 -> {
+	                boolean showDiscount = choosePriceType(sc);
+	                viewMenu(sc, showDiscount);
+	            }
                 case 2 -> addCategory(categories, sc);
                 case 3 -> deleteCategory(categories, sc);
                 case 4 -> editCategory(categories, sc);
@@ -353,6 +436,7 @@ public class MenuApp {
                 case 6 -> deleteProduct(categories, sc);
                 case 7 -> editProduct(categories, sc);
                 case 8 -> manageDiscounts(sc);
+                case 9 -> manageCart(sc);
                 case 0 -> {
                     System.out.println("Thoát chương trình.");
                     return;

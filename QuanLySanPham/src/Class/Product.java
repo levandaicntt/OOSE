@@ -1,5 +1,7 @@
 package Class;
 
+import Menu.MenuApp;
+
 public class Product {
 	String name;
 	float price;
@@ -50,11 +52,23 @@ public class Product {
     }
 	@Override
 	public String toString() {
-	    return name + " | " 
-	         + price + " | " 
-	         + description + " | " 
-	         + amount + " | " 
-	         + sold + " | Tồn kho: " + getStock();
+	    return name 
+	         + " | Giá gốc: " + price
+	         + " | " + description
+	         + " | Số lượng: " + amount
+	         + " | Đã bán: " + sold
+	         + " | Tồn kho: " + getStock();
+	}
+
+	public String toStringWithDiscount() {
+	    float finalPrice = MenuApp.getFinalPrice(this);
+	    return name 
+	         + " | Giá gốc: " + price 
+	         + " | Giá sau giảm: " + finalPrice
+	         + " | " + description
+	         + " | Số lượng: " + amount
+	         + " | Đã bán: " + sold
+	         + " | Tồn kho: " + getStock();
 	}
 
 }
