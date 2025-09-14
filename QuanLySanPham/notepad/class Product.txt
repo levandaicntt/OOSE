@@ -1,0 +1,26 @@
+class Product
+	string name;
+	float price;
+	string description;
+	int amount;
+	int sold;
+
+class Category
+	string name;
+	List<Product> products;
+
+List<Category> categories = new List<Category>(
+	{"tai nghe", new List<Product>("Sony", 1, "", 2, 1)}
+	{"nghẹo", new List<Product>("Umamusume", 100000000, "", 2, 1)
+);
+
+Map<Product, string> products sort price
+
+sắp xếp theo giá: 
+sắp xếp theo danh mục: 
+
+tồn kho: amount - sold
+
+cơ chế giảm giá: interface DiscountStrategy, FixedDiscount, PercentDiscount
+
+thanh toán: List<Product> cart = Product(name, amount, price);

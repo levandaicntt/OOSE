@@ -1,0 +1,25 @@
+class Person {
+	String name;
+	Date birthday;
+}
+class Student {
+	String studentID;
+	String major;
+	Float GPA;
+	String studentGroup;
+}
+List<Student> students;
+lấy dữ liệu từ SQL: students
+thêm và sửa (kiểm tra có trùng ko), xóa từ SQL (khi chỉnh sửa thì nên lưu luôn xuống SQL, hay là chỉ thay đổi trên students)
+Date hợp lệ
+15<=age<=110
+0.0<=GPA<=10.0
+name chuẩn hóa?
+major = [CNTT, KTPM]
+studentID: 10 chữ số, 455105xxxx: CNTT, 455109xxxx: KTPM
+in ra màn theo:
+- studentGroup
+- tất cả Student
+- 1 major
+- GPA
+- (int) month of birthday
